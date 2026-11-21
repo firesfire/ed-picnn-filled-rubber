@@ -1,0 +1,73 @@
+{
+  "schema_version": "2026-08-28-chapter2-fair-protocol-v1.1",
+  "status": "frozen",
+  "registry": "chapter2_model_registry.json",
+  "configuration": "model_comparison_config.json",
+  "split": "model_comparison_split.json",
+  "training_only_selection": true,
+  "time_objective": {
+    "q_log_RMSE_weight": 0.2,
+    "q_ordering_inversion_weight": 0.1,
+    "Rneq_condition_balanced_RMSE_weight": 0.3,
+    "Rneq_decade_balanced_RMSE_weight": 0.2,
+    "R_condition_balanced_RMSE_weight": 0.2,
+    "stress_RMSE_MPa_weight": 0.0,
+    "condition_weighting": "equal",
+    "phase_weighting": "early, middle and late phases are reported and the decade-balanced term prevents dense late sampling from dominating"
+  },
+  "frequency_objective": {
+    "storage_NRMSE_weight": 0.5,
+    "loss_NRMSE_weight": 0.5,
+    "frequency_amplitude_fraction": 0.001,
+    "training": "frequency_hz < 5 or frequency_hz > 20",
+    "held_out": "5 <= frequency_hz <= 20",
+    "strict_prediction": "full-cycle periodic integration at 128 points per cycle after transient removal",
+    "local_linearization_role": "screening and consistency check only"
+  },
+  "candidate_admissibility": {
+    "all_outputs_finite": true,
+    "nonnegative_dissipation_with_tolerance": -1e-10,
+    "maximum_detFv_error": 1e-7,
+    "DMA_periodic_steady_state": true,
+    "positive_branch_weights_or_shares": true,
+    "q_accuracy_threshold": null,
+    "q_ordering_threshold": null,
+    "note": "q magnitude and ordering are common prediction metrics, not model-specific hard gates"
+  },
+  "pareto_and_selection": {
+    "axes": ["training_L_time", "training_L_frequency"],
+    "reported_scalarizations": [0.15, 0.3, 0.5, 0.7, 0.85],
+    "representative_time_weight": 0.5,
+    "representative_score": "sqrt(0.5*training_L_time^2 + 0.5*training_L_frequency^2)",
+    "normalization": "component losses are dimensionless under fixed experimental scales; no per-model min--max normalization",
+    "tie_breakers": ["lower q_log_RMSE", "lower Rneq RMSE", "lower parameter count", "lower runtime"],
+    "held_out_data_used": false,
+    "amplitude_DMA_accuracy_used": false
+  },
+  "optimization": {
+    "seeds": [20260828, 20260829, 20260830, 20260831, 20260901],
+    "T0": {"global_per_seed": 32, "local_per_seed": 8},
+    "T1": {"global_per_seed": 64, "local_per_seed": 16, "candidate_definition": "one complete Gneq--Ogden exponent--flow--softmax spectrum vector"},
+    "T2": {"global_per_seed": 96, "local_per_seed": 24, "candidate_definition": "one complete Gneq--Ogden exponent--two flow groups--softmax spectrum vector"},
+    "budget_saturation_multiplier": 1.5,
+    "budget_saturation_relative_loss_tolerance": 0.02,
+    "required_completed_independent_runs": 5,
+    "record_failures": true
+  },
+  "evaluation": {
+    "relaxation_training": ["uniaxial:25%", "uniaxial:75%", "uniaxial:100%", "shear:0.20", "shear:0.40", "shear:0.80"],
+    "relaxation_held_out": ["uniaxial:50%", "shear:0.60"],
+    "frequency_held_out_band_hz": [5.0, 20.0],
+    "amplitude_DMA": "external diagnostic only at 1 Hz",
+    "parameter_snapshots": {
+      "joint_evaluation": "training conditions only; used for every training--held-out comparison figure",
+      "full_data_teacher": "created only after structure and teacher selection; all allowed relaxation and 0.1% frequency data, no amplitude DMA"
+    }
+  },
+  "reporting": {
+    "mandatory_time_metrics": ["stress_RMSE_MPa", "relaxation_modulus_RMSE_MPa", "R_RMSE", "Rneq_RMSE", "q_log_RMSE", "q_ordering_accuracy", "decade_balanced_Rneq_RMSE"],
+    "mandatory_frequency_metrics": ["storage_RMSE_MPa", "loss_RMSE_MPa", "storage_NRMSE", "loss_NRMSE", "tan_delta_RMSE"],
+    "mandatory_stability_metrics": ["parameter_mean", "parameter_standard_deviation", "parameter_CV", "boundary_hits", "effective_branch_count", "failed_candidates", "runtime"],
+    "time_frequency_wording": "distinguish internal local-linear consistency from inability of one parameter set to match both experimental domains"
+  }
+}

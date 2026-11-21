@@ -1,0 +1,44 @@
+schema_version: '2026-08-29-chapter3-metrics-v1'
+
+relaxation:
+  equilibrium_stress_source: fixed_Zhang_Li_long_time_network
+  q_definition: '(sigma_peak - sigma_eq) / sigma_eq'
+  R_definition: 'sigma(t) / sigma_peak'
+  Rneq_definition: '(sigma(t) - sigma_eq) / (sigma_peak - sigma_eq)'
+  R_infinity_definition: 'sigma_infinity / sigma_peak'
+  time_axis: linear
+  random_time_point_weighting_forbidden: true
+  condition_equal_weight: true
+  decade_equal_weight: true
+  early_middle_late_equal_weight: true
+  priority_order:
+    - q_value_error
+    - q_ordering
+    - Rneq_shape
+    - storage_and_loss_moduli
+    - total_normalized_relaxation
+    - absolute_stress
+
+dma:
+  frequency_variable_hz: f
+  angular_frequency_definition: 'omega = 2*pi*f'
+  frequency_amplitude_fraction: 0.001
+  amplitude_sweep_frequency_hz: 1.0
+  require_periodic_steady_state: true
+  extraction:
+    - storage_modulus_G_prime_MPa
+    - loss_modulus_G_double_prime_MPa
+    - tan_delta
+    - fundamental_harmonic
+    - higher_harmonics_when_finite_amplitude
+
+reporting:
+  report_absolute_stress_rmse: true
+  absolute_stress_is_primary_selection_metric: false
+  report_training_and_holdout_separately: true
+  label_historical_holdout_as_blind: false
+  label_unsupported_path_as_experimentally_validated: false
+  require_per_condition_source_data: true
+  require_multiple_random_seeds: true
+  require_pareto_analysis_for_time_frequency_joint_fit: true
+

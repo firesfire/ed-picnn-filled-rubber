@@ -1,0 +1,92 @@
+schema_version: '2026-08-31-chapter3-stage5b-v1'
+status: fixed_dissipation_epicnn_dynamic_finetuning
+
+stage4_config: '@project/6_final_Model/configs/stage4_gdpicnn_energy_release.yaml'
+stage4_checkpoint: '@project/6_final_Model/checkpoints/stage4/gdpicnn_stage4_selected.pt'
+stage5a_spectrum_file: '@project/6_final_Model/results/stage5a/selected_linear_spectrum.json'
+stage5a_summary_file: '@project/6_final_Model/results/stage5a/stage5a_summary.json'
+stage5a_candidate_checkpoints:
+  shared_saturating_energy_network: '@project/6_final_Model/checkpoints/stage5a/shared_saturating_energy_network.pt'
+  hierarchical_fast_slow_energy_network: '@project/6_final_Model/checkpoints/stage5a/hierarchical_fast_slow_energy_network.pt'
+real_training_cache: '@project/6_final_Model/audit/stage3/stage3_real_training_data.json'
+amplitude_diagnostic_file: '@project/6_final_Model/audit/stage3/stage3_amplitude_external_diagnostic.json'
+
+frozen:
+  zhang_li_equilibrium_energy: true
+  tau_s: [0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0]
+  branch_moduli_from_stage5a_positive_spectrum: true
+  stage4_dissipation_trainable_parameters: false
+  stage4_dissipation_normalization_policy: compare_then_freeze
+  frequency_amplitude_fraction: 0.001
+  amplitude_dma_role: historical_external_diagnostic_not_used_for_gradient
+
+data:
+  relaxation_training: [uniaxial:25%, uniaxial:75%, uniaxial:100%, shear:0.20, shear:0.40, shear:0.80]
+  relaxation_validation: [uniaxial:50%, shear:0.60]
+  frequency_training_rule: 'f_Hz < 5 or f_Hz > 20'
+  frequency_validation_rule: '5 <= f_Hz <= 20'
+  points_per_time_decade: 6
+  maximum_loading_points: 18
+
+energy:
+  candidates: [shared_saturating_energy_network, hierarchical_fast_slow_energy_network]
+  saturation_power_bounds: [0.50, 1.00]
+  saturation_b_bounds: [1.0e-3, 1.0e4]
+  group_transition_tau_s: 1.0
+  preserve_reference_tangent_exactly: true
+
+normalization_diagnostic:
+  cycles: 4
+  points_per_cycle: 32
+  choose_by_frequency_balanced_nrmse: true
+
+loss_weights:
+  q_log: 0.30
+  q_ordering: 0.12
+  Rneq: 0.20
+  Rneq_decade: 0.20
+  R: 0.05
+  loading: 0.05
+  storage: 0.06
+  loss: 0.02
+
+regularization:
+  stage5a_parameter_anchor: 0.002
+  hardening_log_anchor: 0.005
+  effective_ridge_entropy: 0.0002
+
+optimization:
+  seeds: [20260831, 20260832, 20260833]
+  epochs: 60
+  learning_rate: 0.003
+  minimum_learning_rate_fraction: 0.08
+  weight_decay: 1.0e-8
+  gradient_clip: 5.0
+  evaluation_interval: 10
+  training_cycles: 3
+  training_points_per_cycle: 24
+  perturbation_std: 0.025
+
+selection:
+  require_training_q_ordering: true
+  require_validation_q_better_than_stage4: true
+  maximum_validation_Rneq_degradation_fraction_from_stage4: 0.10
+  maximum_frequency_storage_relative_rmse: 0.08
+  maximum_frequency_loss_relative_rmse: 0.25
+  require_nonnegative_dissipation: true
+  require_all_finite: true
+  primary: validation_composite
+  secondary: parameter_count_and_seed_stability
+
+full_validation:
+  recompute_full_tensor_relaxation: true
+  recompute_full_tensor_frequency_subset_Hz: [0.1, 1.0, 10.0, 100.0]
+  recompute_amplitude_diagnostic: true
+  time_step_levels: [1.0, 0.5, 0.25]
+  newton_residual_maximum: 1.01e-8
+  detFv_error_maximum: 1.0e-8
+
+outputs:
+  results_dir: '@project/6_final_Model/results/stage5b'
+  checkpoints_dir: '@project/6_final_Model/checkpoints/stage5b'
+  figures_dir: '@project/6_final_Model/figures/stage5b'

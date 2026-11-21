@@ -1,0 +1,75 @@
+{
+  "schema_version": "2026-08-28-chapter2-model-registry-v1",
+  "status": "frozen",
+  "chapter_argument": "Under one experimental source, one fixed Zhang--Li equilibrium network, one seven-branch time spectrum and one fair calibration protocol, compare the attainable joint time--frequency capability of progressively enriched traditional models and identify their bounded role as low-fidelity physical priors.",
+  "canonical_terms": {
+    "T0": "Equilibrium-anchored QLV with seven scalar memory modes",
+    "T1": "Seven-branch single-term Ogden model with shared flow parameters",
+    "T2": "Seven-branch single-term Ogden model with fast and slow flow parameter groups",
+    "q": "Normalized nonequilibrium peak",
+    "R": "Normalized total relaxation response",
+    "R_neq": "Normalized nonequilibrium relaxation response"
+  },
+  "common_structure": {
+    "equilibrium_energy": "fixed Zhang--Li network from common/model_comparison_config.json",
+    "tau_s": [0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0],
+    "time_scales_fixed": true,
+    "data_config": "model_comparison_config.json",
+    "condition_split": "model_comparison_split.json"
+  },
+  "main_models": {
+    "T0": {
+      "paper_label": "T0",
+      "directory": "../2_QLV",
+      "implementation": "../2_QLV/code_paper/t0_model.py",
+      "initial_checkpoint": "../2_QLV/results_paper_7branch/parameters/T0_joint_evaluation_parameters.json",
+      "kinematics": "equilibrium-stress hereditary QLV convolution with measured loading ramp",
+      "nonequilibrium_energy": "not represented by branchwise tensor internal variables",
+      "flow_parameter_sharing": "one nonnegative scalar Prony spectrum shared by all deformation modes and levels",
+      "independent_parameter_count": 7,
+      "role": "minimum transparent baseline and structural control"
+    },
+    "T1": {
+      "paper_label": "T1",
+      "directory": "../5_T1_OgdenPRF",
+      "implementation": "ogden_prf_core.py and ../5_T1_OgdenPRF/code/t1_ogden/model.py",
+      "initial_checkpoint": "../5_T1_OgdenPRF/results/parameters/T1_Ogden_1_stage5_guarded_joint_parameters.json",
+      "kinematics": "seven branchwise multiplicative decompositions F=Fe_alpha Fv_alpha",
+      "nonequilibrium_energy": "one-term incompressible Ogden energy with nonnegative normalized branch shares",
+      "flow_parameter_sharing": "one shared regularized hardening power-law parameter set across all seven branches",
+      "independent_parameter_count": 13,
+      "increment_relative_to_previous": "replace the scalar separable QLV kernel by objective tensor internal variables, Ogden nonequilibrium storage and state-dependent flow",
+      "role": "shared-flow finite-strain traditional baseline"
+    },
+    "T2": {
+      "paper_label": "T2",
+      "directory": "../6_T2_GroupedOgdenPRF",
+      "implementation": "ogden_prf_core.py and ../6_T2_GroupedOgdenPRF/code/t2_ogden/model.py",
+      "initial_checkpoint": "../6_T2_GroupedOgdenPRF/results/parameters/T2_Ogden_1_stage5_guarded_joint_parameters.json",
+      "kinematics": "identical to T1",
+      "nonequilibrium_energy": "identical one-term incompressible Ogden energy and branch spectrum parameterization as T1",
+      "flow_parameter_sharing": "fast branches tau<=1 s and slow branches tau>1 s use separate regularized hardening power-law parameter sets",
+      "independent_parameter_count": 18,
+      "increment_relative_to_previous": "only the declared fast--slow flow-parameter grouping is added relative to T1",
+      "role": "highest-complexity main traditional baseline and teacher candidate"
+    }
+  },
+  "structural_ablations": {
+    "T1-ZL": {
+      "directory": "../3_PRF",
+      "role": "diagnose the same-shape Zhang--Li nonequilibrium-energy restriction; not a main chapter tier after the freeze"
+    },
+    "T2-ZL": {
+      "directory": "../4_GroupedPRF",
+      "role": "diagnose whether flow grouping alone fixes the same-shape storage restriction; not a main chapter tier after the freeze"
+    }
+  },
+  "forbidden_silent_changes": [
+    "refitting a model-specific equilibrium network",
+    "changing branch count or fixed time scales",
+    "changing the held-out conditions",
+    "using amplitude DMA in calibration or representative selection",
+    "using separate parameter sets for plotted time- and frequency-domain predictions",
+    "renaming an old parameter file as a new teacher without recomputation"
+  ]
+}

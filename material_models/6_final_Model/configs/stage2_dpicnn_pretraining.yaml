@@ -1,0 +1,65 @@
+schema_version: '2026-08-30-chapter3-stage2-v1'
+status: teacher_pretraining_only
+stage1_config: '@project/6_final_Model/configs/stage1_dual_potential.yaml'
+teacher_cache: '@project/6_final_Model/audit/stage2/stage2_teacher_cache.npz'
+teacher_parameter_file: '@project/2_TeacherModel/results_chapter2_fair_comparison/parameters/T2_chapter2_joint_evaluation_parameters.json'
+
+data:
+  training_split: train
+  supervised_confidences: [high, medium]
+  excluded_from_gradient: [low]
+  split_unit: complete_trajectory
+  use_flow_supervision: true
+  use_rollout_supervision: true
+  use_stress_supervision: false
+  teacher_stress_rollout_diagnostic: true
+  use_energy_supervision: false
+  experimental_labels_accessed: false
+  sample_weight_application_count: 1
+  branch_weighting: equal
+
+architectures:
+  PICNN-A:
+    context: [log10_tau_over_1s]
+  PICNN-B:
+    context: [log10_tau_over_1s, elastic_I1_minus_3, viscous_I1_minus_3, hardening_variable]
+  PICNN-C:
+    context: [log10_tau_over_1s, total_I1_minus_3, elastic_I1_minus_3, viscous_I1_minus_3, hardening_variable]
+  common_encoder_width: 24
+  common_basis_width: 12
+  strict_convexity: 1.0e-8
+  fixed_dimensional_preconditioner: 'g_alpha = G_alpha / sigma_ref; u = j / g_alpha^2; Phi = sigma_ref*g_alpha*phi(u,context)'
+  preconditioner_trainable: false
+
+normalization:
+  sigma_ref_MPa: 0.11565279376482657
+  tau_ref_s: 1.0
+  source: synthetic_train_split_only_stage0_frozen
+  condition_channels:
+    log_tau_over_1s: [0.0, 2.0]
+    total_I1_minus_3: [0.3030788629509967, 0.41706362389751866]
+    elastic_I1_minus_3: [0.06501872142323824, 0.1781529178183958]
+    viscous_I1_minus_3: [0.1951905443602957, 0.3487359989378981]
+    hardening_variable: [0.16718546022336916, 0.16596854899036956]
+
+optimization:
+  seeds: [20260828, 20260829, 20260830]
+  maximum_epochs: 500
+  minimum_epochs: 250
+  patience_epochs: 80
+  evaluation_interval: 10
+  batch_size: 8192
+  learning_rate: 0.003
+  minimum_learning_rate: 0.0001
+  weight_decay: 1.0e-7
+  gradient_clip: 10.0
+  tensor_asinh_scale: 0.02
+  loss_weights:
+    log_slope: 1.0
+    dimensionless_tensor: 0.5
+    linear_nrmse: 0.25
+
+selection:
+  primary: median_validation_flow_nrmse_high_medium
+  secondary: [test_flow_nrmse_high_medium, rollout_state_error, rollout_stress_error, parameter_count, inference_cost]
+  require_multiseed_consistent_ranking: true

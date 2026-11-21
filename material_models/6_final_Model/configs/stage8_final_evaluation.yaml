@@ -1,0 +1,77 @@
+schema_version: '2026-09-01-chapter3-stage8-v1'
+status: frozen_model_ablation_generalization_fe_and_final_selection
+
+stage7_config: '@project/6_final_Model/configs/stage7_joint_consistency.yaml'
+stage7_checkpoint: '@project/6_final_Model/checkpoints/stage7/edpicnn_stage7_selected.pt'
+teacher_parameter_file: '@project/2_TeacherModel/results_chapter2_fair_comparison/parameters/T2_chapter2_joint_evaluation_parameters.json'
+
+frozen:
+  all_candidate_parameters: true
+  zhang_li_equilibrium_energy: true
+  tau_s: [0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0]
+  frequency_amplitude_fraction: 0.001
+  amplitude_dma_role: external_diagnostic_only
+  amplitude_labels_used_for_gradient: false
+
+eligible_models:
+  - T2-Ogden
+  - D-PICNN
+  - GD-PICNN
+  - E-PICNN
+  - ED-PICNN
+
+historical_ablation:
+  - old-stage8-local-energy-correction
+
+complex_paths:
+  cyclic_shear:
+    amplitude: 0.40
+    frequency_Hz: 0.20
+    cycles: 2
+    points_per_cycle: 16
+  multilevel_shear:
+    time_s: [0.0, 0.5, 5.0, 5.5, 15.0, 15.5, 25.0, 25.5, 40.0]
+    level: [0.0, 0.20, 0.20, 0.50, 0.50, 0.30, 0.30, 0.70, 0.70]
+  load_unload_reload_uniaxial:
+    time_s: [0.0, 1.0, 5.0, 6.0, 10.0, 11.0, 20.0]
+    level: [0.0, 0.60, 0.60, 0.10, 0.10, 0.80, 0.80]
+  planar_relaxation:
+    time_s: [0.0, 1.0, 5.0, 20.0]
+    level: [0.0, 0.50, 0.50, 0.50]
+  equibiaxial_relaxation:
+    time_s: [0.0, 1.0, 5.0, 20.0]
+    level: [0.0, 0.25, 0.25, 0.25]
+  preload_dma:
+    preload: 0.30
+    amplitude: 0.02
+    frequency_Hz: 1.0
+    points_per_cycle: 48
+    maximum_cycles: 8
+    steady_tolerance: 5.0e-4
+  creep_shear:
+    time_s: [0.0, 0.2, 1.0, 3.0, 10.0, 30.0]
+    stress_MPa: [0.0, 0.12, 0.12, 0.12, 0.12, 0.12]
+
+finite_element:
+  tangent_mode: shear
+  initial_level: 0.20
+  final_level: 0.22
+  time_step_s: 0.10
+  finite_difference_step: 1.0e-5
+  extreme_modes: [shear, uniaxial]
+  extreme_levels: [0.01, 0.05, 0.10, 0.25, 0.50, 1.00]
+  extreme_time_steps_s: [0.0001, 0.01, 1.0, 100.0]
+  maximum_tangent_relative_error: 0.01
+  maximum_detFv_error: 1.0e-8
+
+stability_domain:
+  uniaxial: [0.0, 2.0, 13]
+  shear: [0.0, 1.5, 13]
+  planar: [0.0, 1.5, 11]
+  equibiaxial: [0.0, 0.80, 11]
+  acoustic_directions_per_state: 10
+
+outputs:
+  results_dir: '@project/6_final_Model/results/stage8'
+  figures_dir: '@project/6_final_Model/figures/stage8'
+  checkpoints_dir: '@project/6_final_Model/checkpoints/stage8'

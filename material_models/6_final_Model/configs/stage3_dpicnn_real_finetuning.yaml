@@ -1,0 +1,67 @@
+schema_version: '2026-08-30-chapter3-stage3-v1'
+status: fixed_energy_real_data_finetuning
+stage2_checkpoint: '@project/6_final_Model/checkpoints/stage2/dpicnn_stage2_final.pt'
+teacher_parameter_file: '@project/2_TeacherModel/results_chapter2_fair_comparison/parameters/T2_chapter2_joint_evaluation_parameters.json'
+real_training_cache: '@project/6_final_Model/audit/stage3/stage3_real_training_data.json'
+synthetic_anchor_cache: '@project/6_final_Model/audit/stage2/stage2_teacher_cache.npz'
+
+frozen:
+  zhang_li_equilibrium_energy: true
+  ogden_nonequilibrium_energy: true
+  total_nonequilibrium_modulus: true
+  branch_shares: true
+  branch_time_scales: true
+  ogden_exponent: true
+  trainable_module: dissipation_potential_only
+
+data:
+  split_unit: complete_condition
+  relaxation_training: [uniaxial:25%, uniaxial:75%, uniaxial:100%, shear:0.20, shear:0.40, shear:0.80]
+  relaxation_validation: [uniaxial:50%, shear:0.60]
+  frequency_training_rule: 'f_Hz < 5 or f_Hz > 20'
+  frequency_validation_rule: '5 <= f_Hz <= 20'
+  frequency_amplitude_fraction: 0.001
+  amplitude_dma_role: external_diagnostic_only_after_model_selection
+  amplitude_labels_used_for_optimization: false
+  points_per_time_decade: 5
+  maximum_loading_points: 14
+
+loss:
+  time_weight: 0.60
+  frequency_weight: 0.40
+  relaxation:
+    q_log: 0.25
+    q_ordering: 0.10
+    normalized_nonequilibrium_curve: 0.25
+    decade_equal_nonequilibrium_curve: 0.25
+    normalized_total_relaxation: 0.10
+    loading_segment: 0.05
+  frequency:
+    nonequilibrium_storage: 0.50
+    loss_log: 0.50
+
+optimization:
+  seeds: [20260830, 20260831, 20260832]
+  anchor_weights: [0.0, 0.05, 0.50]
+  guarded_anchor_weights: [0.50, 2.0, 10.0]
+  maximum_epochs: 40
+  minimum_epochs: 20
+  patience_epochs: 15
+  evaluation_interval: 5
+  learning_rate: 0.0003
+  minimum_learning_rate: 0.00002
+  weight_decay: 1.0e-7
+  gradient_clip: 3.0
+  synthetic_anchor_batch: 4096
+  training_cycles: 2
+  training_points_per_cycle: 20
+  final_reduced_cycles: 8
+  final_reduced_points_per_cycle: 96
+
+selection:
+  primary: real_validation_objective
+  synthetic_validation_flow_nrmse_maximum: 0.10
+  require_feasible_checkpoint: true
+  require_finite: true
+  require_nonnegative_dissipation: true
+  prefer_lower_anchor_and_parameter_drift_on_tie: true

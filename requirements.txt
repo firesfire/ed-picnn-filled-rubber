@@ -1,0 +1,8 @@
+h5py
+matplotlib
+numpy
+openpyxl
+pandas
+PyYAML
+scipy
+torch>=2.0

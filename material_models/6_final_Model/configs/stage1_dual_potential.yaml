@@ -1,0 +1,53 @@
+schema_version: '2026-08-29-chapter3-stage1-v1'
+status: physics_only_no_training
+common_protocol: '@project/6_final_Model/configs/chapter3_common.yaml'
+numerical_protocol: '@project/6_final_Model/configs/numerical_physics_protocol.yaml'
+teacher_parameter_file: '@project/2_TeacherModel/results_chapter2_fair_comparison/parameters/T2_chapter2_joint_evaluation_parameters.json'
+python_executable: 'python'
+default_dtype: float64
+default_device: cpu
+
+model_interfaces:
+  equilibrium_energy: fixed_long_time_Zhang_Li
+  nonequilibrium_energy_candidates:
+    - fixed_one_term_Ogden
+    - low_parameter_trainable_Ogden
+    - constrained_neural_isochoric_energy
+  dual_dissipation_candidates:
+    - frozen_T2_grouped_power_potential
+    - state_conditioned_convex_PICNN
+  stress_source: complete_free_energy_autodiff
+  flow_source: dual_dissipation_potential_autodiff
+  direct_stress_network_forbidden: true
+  direct_internal_increment_network_forbidden: true
+
+neural_energy:
+  invariant_inputs: [I1_bar_minus_3, I2_bar_minus_3]
+  branch_count: 7
+  basis_width: 12
+  positive_weights: softplus
+  reference_energy_correction: shifted_softplus_at_identity
+  reference_stress_control: isochoric_invariants_have_zero_first_derivative_at_identity
+
+neural_dissipation:
+  convex_input: J2_over_sigma_ref_squared
+  context_inputs: [viscous_I1_minus_3, viscous_I2_minus_3, hardening, log10_tau_over_1s, viscous_inverse_I1_minus_3]
+  reference_time_s: 1.0
+  encoder_width: 16
+  positive_coefficients: softplus
+  strict_convexity: 1.0e-8
+  zero_origin: shifted_softplus
+
+integration:
+  local_unknown: five_component_symmetric_deviatoric_log_increment
+  update: Fv_np1_equals_exp_DeltaZv_times_Fv_n
+  newton_absolute_tolerance: 1.0e-10
+  newton_relative_tolerance: 1.0e-8
+  newton_maximum_iterations: 40
+  armijo_line_search: true
+  maximum_subdivision_depth: 10
+  maximum_scalar_increment: 0.025
+
+training_enabled: false
+experimental_labels_accessed: false
+teacher_trajectory_labels_accessed: false

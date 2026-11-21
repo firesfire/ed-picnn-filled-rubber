@@ -1,0 +1,48 @@
+schema_version: '2026-08-29-chapter3-experimental-split-v1'
+split_unit: complete_experimental_condition
+random_time_point_split_forbidden: true
+
+hyperelastic:
+  role: fixed_equilibrium_network_verification_only
+  parameter_fitting_in_chapter3: false
+  conditions:
+    - uniaxial
+    - planar
+    - equibiaxial
+
+relaxation:
+  training:
+    uniaxial_engineering_strain: [0.25, 0.75, 1.00]
+    simple_shear_engineering_shear: [0.20, 0.40, 0.80]
+  historical_holdout_not_blind:
+    uniaxial_engineering_strain: [0.50]
+    simple_shear_engineering_shear: [0.60]
+  note: >-
+    These complete-condition holdouts were not used in the active chapter-2
+    parameter search, but their results have already been inspected and used in
+    model comparison. They are development/generalization diagnostics, not a
+    new strict blind test.
+
+frequency_dma:
+  amplitude_fraction: 0.001
+  training_rule: 'frequency_hz < 5 or frequency_hz > 20'
+  training_frequencies_hz:
+    [0.1, 0.15, 0.2, 0.3, 0.5, 0.7, 1.0, 1.5, 2.0, 3.0, 22.0, 32.0, 46.0, 68.0, 100.0]
+  historical_holdout_not_blind_rule: '5 <= frequency_hz <= 20'
+  historical_holdout_not_blind_frequencies_hz: [5.0, 7.0, 10.0, 15.0]
+  note: >-
+    The continuous band has already been inspected in chapter 2 and therefore
+    is not a new strict blind test.
+
+amplitude_dma:
+  frequency_hz: 1.0
+  role: fixed_parameter_prediction
+  participate_in_primary_joint_calibration: false
+  participate_in_teacher_selection: false
+  reported_storage_observations: 23
+  reported_loss_observations: 21
+
+chapter4_fixed_parameter_predictions:
+  - stress_controlled_creep
+  - finite_preload_frequency_sweeps
+  - finite_preload_amplitude_sweeps

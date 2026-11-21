@@ -1,0 +1,51 @@
+schema_version: '2026-08-29-chapter3-numerics-v1'
+
+kinematics:
+  multiplicative_decomposition: true
+  total_incompressibility: true
+  viscous_incompressibility: true
+  viscous_update: exponential_map_of_symmetric_deviatoric_generator
+
+physical_checks:
+  objectivity_relative_tolerance: 1.0e-8
+  isotropy_required: true
+  reference_energy_absolute_tolerance_MPa: 1.0e-10
+  reference_stress_absolute_tolerance_MPa: 1.0e-10
+  reference_driving_force_absolute_tolerance_MPa: 1.0e-10
+  zero_force_flow_absolute_tolerance_per_s: 1.0e-12
+  minimum_dissipation_MPa_per_s: -1.0e-10
+  determinant_F_absolute_tolerance: 1.0e-8
+  determinant_Fv_absolute_tolerance: 1.0e-8
+  deviatoric_trace_absolute_tolerance: 1.0e-8
+  finite_outputs_required: true
+  sampled_energy_lower_bound_required: true
+  sampled_tangent_stability_required: true
+
+integration:
+  local_scheme: implicit_exponential_map
+  newton_absolute_tolerance: 1.0e-10
+  newton_relative_tolerance: 1.0e-8
+  newton_max_iterations: 40
+  line_search_required: true
+  maximum_subdivision_depth: 10
+  maximum_nominal_strain_increment: 0.025
+  time_step_convergence_levels: ['dt', 'dt/2', 'dt/4']
+  maximum_dt_half_vs_dt_quarter_relative_difference: 0.01
+
+dma:
+  frequency_points_per_cycle_primary: 128
+  amplitude_points_per_cycle_initial: 64
+  amplitude_points_per_cycle_fallback: [128, 256]
+  periodic_steady_state_relative_tolerance: 1.0e-5
+  local_linear_route_required: true
+  periodic_integration_route_required: true
+  relaxation_transform_route_required: true
+
+optimization_fairness:
+  same_data_split_required: true
+  same_metric_definitions_required: true
+  same_numerical_accuracy_required: true
+  comparable_budget_required: true
+  publish_actual_candidate_calls: true
+  publish_wall_clock_and_inference_cost: true
+

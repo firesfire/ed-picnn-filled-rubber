@@ -1,0 +1,27 @@
+*Heading
+** edpicnn 4000 N preload -> z dynamic, 100 Hz, A=0.25 mm
+*Preprint, echo=NO, model=NO, history=NO, contact=NO
+*Restart, read, step=4, inc=146
+*Amplitude, name=ZSINE, definition=PERIODIC
+1, 628.3185307179587, 0.0, 4.990581512451172
+0.0, 0.25
+*Step, name=Dynamic-z-100Hz, nlgeom=YES, unsymm=YES, inc=500
+*Static
+0.0002083333333333333, 0.05, 2.083333333333334e-07, 0.0002083333333333333
+*Controls, analysis=discontinuous
+*Controls, parameters=line search
+5
+*Boundary, amplitude=ZSINE
+MIDDLE, 3, 3, 1.0
+*Restart, write, frequency=25
+*Output, field, frequency=10
+*Node Output
+COORD, RF, U
+*Element Output, directions=YES
+IVOL, LE, S, SDV
+*Energy Output
+ALLSD, ALLIE, ALLKE, ALLSE
+*Output, history, frequency=1
+*Node Output, nset=MIDDLE
+RF1, RF2, RF3, U1, U2, U3
+*End Step

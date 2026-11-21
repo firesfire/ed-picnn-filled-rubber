@@ -1,0 +1,166 @@
+{
+  "schema_version": "2026-08-28-chapter2-dual-layer-v1.0",
+  "status": "frozen",
+  "purpose": "separate structural fair comparison from low-fidelity teacher selection so that one task cannot silently change the other",
+  "effective_date": "2026-08-28",
+  "supersedes_only": [
+    "single representative point as a cross-model winner",
+    "using teacher-selection preference to redefine the fair-comparison Pareto result",
+    "using amplitude DMA in calibration or teacher selection"
+  ],
+  "retains": {
+    "model_registry": "chapter2_model_registry.json",
+    "common_configuration": "model_comparison_config.json",
+    "condition_split": "model_comparison_split.json",
+    "original_fair_protocol": "chapter2_fair_comparison_protocol.json",
+    "guarded_incremental_protocol": "chapter2_guarded_incremental_protocol.json"
+  },
+  "common_immutable_definitions": {
+    "main_models": ["T0", "T1", "T2"],
+    "equilibrium_network": "one fixed Zhang--Li long-term equilibrium network",
+    "tau_s": [0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0],
+    "relaxation_loading": "measured finite loading ramps; no ideal-step replacement",
+    "frequency_DMA_amplitude_fraction": 0.001,
+    "stress_and_modulus_unit": "MPa",
+    "frequency_unit": "Hz with omega=2*pi*f",
+    "amplitude_DMA_role": "external diagnostic only; excluded from calibration, early stopping, fair representative choice and teacher selection",
+    "separate_time_and_frequency_parameter_sets_forbidden": true
+  },
+  "layer_A_fair_comparison": {
+    "question": "What capability and boundary is attainable by each progressively enriched traditional structure under common data, physics, solvers and metrics?",
+    "output": "a Pareto- and evidence-based comparison, not a single overall champion",
+    "calibration_data": {
+      "relaxation_training": ["uniaxial:25%", "uniaxial:75%", "uniaxial:100%", "shear:0.20", "shear:0.40", "shear:0.80"],
+      "relaxation_held_out": ["uniaxial:50%", "shear:0.60"],
+      "frequency_training": "frequency_hz < 5 or frequency_hz > 20",
+      "frequency_held_out": "5 <= frequency_hz <= 20",
+      "held_out_used_for_parameter_search": false
+    },
+    "time_loss": {
+      "q_log_RMSE_weight": 0.2,
+      "q_ordering_inversion_weight": 0.1,
+      "Rneq_condition_balanced_RMSE_weight": 0.3,
+      "Rneq_decade_balanced_RMSE_weight": 0.2,
+      "R_condition_balanced_RMSE_weight": 0.2,
+      "stress_RMSE_MPa_weight": 0.0,
+      "stress_RMSE_role": "secondary reported metric"
+    },
+    "frequency_loss": {
+      "storage_NRMSE_weight": 0.5,
+      "loss_NRMSE_weight": 0.5,
+      "normalization_floor_MPa": {"storage": 0.05, "loss": 0.02},
+      "strict_solver": "full-cycle periodic integration at 128 points per cycle after transient removal"
+    },
+    "evidence_hierarchy": [
+      "physical and numerical admissibility",
+      "training L_time--L_frequency Pareto relation under the frozen discovery campaign",
+      "complete-condition and continuous-band held-out prediction",
+      "q, R_neq, total relaxation, stress, G_prime and G_double_prime decomposed metrics",
+      "parameter stability, identifiability and computational cost",
+      "amplitude DMA external diagnosis"
+    ],
+    "pareto_rules": {
+      "axes": ["training_L_time", "training_L_frequency"],
+      "within_model_minmax_normalization": false,
+      "held_out_used_to_construct_front": false,
+      "amplitude_DMA_used_to_construct_front": false,
+      "dominance_definition": "no worse on both axes and strictly better on at least one axis",
+      "cross_model_claim": "report crossing, local dominance and bounded structural gains; do not infer a universal winner from one scalarization"
+    },
+    "representative_snapshot_rules": {
+      "role": "one reproducible parameter snapshot for curve panels and decomposed tables",
+      "cross_model_winner_role": false,
+      "T0": "reuse the qualified saturated T0 snapshot without rerunning",
+      "T1_T2": "use guarded active snapshots; old guarded baselines are forced into strict evaluation and replacement requires time and frequency nondegradation",
+      "required_label_in_reports": "guarded illustrative snapshot; structural conclusions rely on the full evidence hierarchy"
+    },
+    "optimization_comparability": {
+      "common_seeds": [20260828, 20260829, 20260830, 20260831, 20260901],
+      "discovery_campaign": "dimension-scaled candidate budgets and common scalarization grid from chapter2_fair_comparison_protocol.json",
+      "budget_saturation_tolerance": 0.02,
+      "T0_action": "not rerun because the frozen discovery campaign already passed its saturation gate",
+      "T1_T2_guarded_campaign": "reported separately as baseline recovery and local refinement; it cannot be counted as an equal-budget Pareto advantage over T0",
+      "claim_boundary": "best reproducibly attained result under the documented cumulative searches, not a proof of global optimum"
+    },
+    "forbidden_conclusions": [
+      "the model with the lowest single joint score is universally best",
+      "a lower total stress RMSE proves a better nonequilibrium law",
+      "teacher selection proves structural Pareto dominance",
+      "all traditional viscoelastic models are unable to achieve time-frequency consistency"
+    ]
+  },
+  "layer_B_teacher_selection": {
+    "question": "Which audited model is the most suitable physically acceptable low-fidelity source of complete constitutive-state labels?",
+    "timing": "performed only after Layer A model structures, active snapshots and validation evidence are frozen",
+    "candidate_identity_preassigned": false,
+    "candidate_set": ["T0", "T1", "T2"],
+    "eligibility_gates": {
+      "complete_branchwise_tensor_state": true,
+      "stress_energy_driving_force_flow_rate_and_dissipation_available": true,
+      "objectivity_and_isotropy": true,
+      "nonnegative_dissipation_tolerance_MPa_per_s": -1e-10,
+      "maximum_detFv_error": 1e-7,
+      "zero_driving_force_zero_flow": true,
+      "finite_outputs_on_allowed_paths": true,
+      "time_step_convergence_passed": true,
+      "DMA_periodic_convergence_passed": true,
+      "minimum_training_q_ordering_accuracy": 1.0,
+      "maximum_training_q_log_RMSE": 0.75,
+      "one_parameter_set_for_time_and_frequency": true
+    },
+    "structural_eligibility_note": "T0 remains a valid fair-comparison baseline but is ineligible for the complete-state teacher role unless a branchwise tensor state and dissipation definition is added, which would constitute a new model.",
+    "data_use": {
+      "training_data": "used for calibration and teacher scoring",
+      "held_out_data": "excluded from calibration; allowed in teacher scoring only after all candidate structures and parameters are frozen",
+      "amplitude_DMA": "external confidence-domain diagnosis only; excluded from teacher identity score"
+    },
+    "predictive_utility": {
+      "direction": "lower is better",
+      "formula": "P=sqrt(sum_i w_i*(m_i/s_i)^2)",
+      "metrics": [
+        {"name": "training_q_log_RMSE", "weight": 0.15, "scale": 0.75},
+        {"name": "training_Rneq_RMSE", "weight": 0.25, "scale": 0.10},
+        {"name": "held_out_Rneq_RMSE", "weight": 0.15, "scale": 0.10},
+        {"name": "training_L_time", "weight": 0.15, "scale": 0.30},
+        {"name": "held_out_L_time", "weight": 0.10, "scale": 0.30},
+        {"name": "training_L_frequency", "weight": 0.10, "scale": 2.00},
+        {"name": "held_out_L_frequency", "weight": 0.10, "scale": 2.00}
+      ],
+      "rationale": "complete-state pretraining prioritizes q and R_neq label fidelity while retaining nonzero time- and frequency-domain evidence"
+    },
+    "secondary_penalties": {
+      "overall_formula": "S_teacher=0.60*min(P/2,1)+0.15*S_stability+0.15*S_numerical+0.10*S_cost",
+      "parameter_stability": "S_stability=0.50*min(seed_response_dispersion/0.10,1)+0.25*boundary_hit_fraction+0.25*failed_candidate_fraction",
+      "numerical_stability": "S_numerical=0.50*min(dt_convergence_error/0.01,1)+0.50*min(DMA_ppc_convergence_error/0.01,1)",
+      "cost": "S_cost=min(log(1+C_model/C_T0)/log(101),1), using accumulated candidate CPU seconds and the frozen T0 cost",
+      "all_penalties_range": [0.0, 1.0]
+    },
+    "decision_rule": {
+      "step_1": "remove every candidate failing any eligibility gate",
+      "step_2": "compute the frozen predictive utility and secondary penalties without model-specific renormalization",
+      "step_3": "select the lowest S_teacher",
+      "near_tie_relative_difference": 0.02,
+      "near_tie_breakers": ["fewer independent parameters", "lower accumulated candidate CPU cost", "lower boundary-hit fraction"],
+      "no_eligible_candidate": "do not create a formal teacher; report that only baseline models are available"
+    },
+    "post_selection_requirements": {
+      "confidence_domains": ["high", "medium", "low_or_excluded"],
+      "teacher_labels_are_experimental_truth": false,
+      "parameter_and_protocol_hashes_required": true,
+      "out_of_domain_samples_receive_lower_weight": true,
+      "new_full_data_teacher_refit_requires_new_version": true
+    },
+    "decision_status": "pending final active-parameter numerical validation, seed-stability recomputation and cost synchronization; no model name is frozen by this protocol"
+  },
+  "change_control": {
+    "requires_new_schema_version": [
+      "data snapshot or unit definition",
+      "model structure, branch count, time scales or equilibrium network",
+      "condition split or DMA amplitude",
+      "Layer A metric weights or Pareto rules",
+      "Layer B eligibility gates, score weights, scales or tie breakers"
+    ],
+    "requires_recomputation": true,
+    "silent_overwrite_forbidden": true
+  }
+}

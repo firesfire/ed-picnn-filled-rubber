@@ -1,0 +1,136 @@
+{
+  "schema_version": "2026-08-28-chapter2-frozen-v2.1",
+  "protocol_status": "frozen for the T0--T1-Ogden--T2-Ogden fair comparison; changes require a new schema version",
+  "path_policy": "all data and model paths are resolved relative to configuration or registry files; no drive letter is part of the scientific definition",
+  "seed_list": [20260828, 20260829, 20260830, 20260831, 20260901],
+  "data": {
+    "viscoelastic": "../../data_vis.xlsx",
+    "hyperelastic": "../../data_hyperelastic.xlsx"
+  },
+  "zhang_li": {
+    "D": 0.2225397906,
+    "mu": -0.1400176947,
+    "B": 27.47252003,
+    "N": 0.9873994149,
+    "beta": 0.005474975642
+  },
+  "spectrum": {
+    "tau_s": [0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0],
+    "time_scales_are_fixed": true,
+    "time_scale_optimization_allowed": false,
+    "branch_count": 7
+  },
+  "split": {
+    "uniaxial_validation": ["50%"],
+    "shear_validation": ["0.60"],
+    "frequency_validation_hz": [5.0, 20.0]
+  },
+  "time_loss": {
+    "peak_share": 0.4,
+    "curve_share": 0.3,
+    "decade_share": 0.3,
+    "points_per_decade": 5,
+    "legacy_runner_role": "compatibility only for archived T0/T1-ZL/T2-ZL pipelines; not the frozen chapter-2 fair objective"
+  },
+  "chapter2_fair_time_loss": {
+    "q_log_RMSE_share": 0.2,
+    "Rneq_curve_share": 0.3,
+    "Rneq_decade_share": 0.2,
+    "normalized_total_relaxation_share": 0.2,
+    "ordering_share": 0.1,
+    "peak_metric": "RMSE of log(q_model/q_experiment) over complete conditions",
+    "curve_metric": "condition-balanced RMSE of normalized nonequilibrium relaxation R_neq",
+    "decade_metric": "condition- and decade-balanced RMSE of R_neq",
+    "ordering_metric": "fraction of inverted experimental ordering pairs within each loading mode",
+    "total_relaxation_metric": "condition-balanced RMSE of normalized total relaxation R",
+    "stress_RMSE_role": "reported secondary metric; excluded from parameter selection",
+    "implementation_requirement": "the new unified fair-comparison runner must consume this block explicitly; legacy runners are not compliant"
+  },
+  "joint": {
+    "time_domain_weights": [0.15, 0.3, 0.5, 0.7, 0.85],
+    "strict_representative_time_weight": 0.5,
+    "representative_rule": "minimum fixed-origin distance sqrt(0.5*L_time^2+0.5*L_frequency^2) on the unregularized training Pareto front",
+    "q_guardrail": "no model-specific hard RMSE threshold in the fair comparison; q magnitude and ordering enter the common time loss",
+    "held_out_usage": "evaluation only; excluded from search, early stopping and representative selection",
+    "amplitude_dma_usage": "external diagnostic only; excluded from calibration, early stopping and representative selection",
+    "regularization_usage": "may stabilize a model-specific optimizer but is excluded from reported prediction loss and final cross-model score",
+    "weight_lower_bound": 1e-8,
+    "weight_upper_bound": 3.0
+  },
+  "flow_bounds": {
+    "nonlinear_multiplier": [0.0, 50.0],
+    "s0_MPa": [0.01, 2.0],
+    "m": [1.05, 5.0],
+    "c": [-20.0, 0.0],
+    "h0": [0.005, 1.0]
+  },
+  "ogden_bounds": {
+    "Gneq_MPa": [0.01, 1.1],
+    "a_ogden": [0.75, 8.0],
+    "branch_share_parameterization": "softmax",
+    "branch_share_sum": 1.0,
+    "q0_MPa_fixed": 1e-6,
+    "gamma0_per_s_fixed": 0.0,
+    "transition_tau_s_fixed": 1.0
+  },
+  "optimization": {
+    "independent_seed_count": 5,
+    "global_candidates_per_seed": 32,
+    "local_candidates_per_seed": 8,
+    "weight_max_nfev": 500,
+    "per_model_budget": {
+      "T0": {
+        "global_weight_starts_per_seed": 32,
+        "local_weight_starts_per_seed": 8,
+        "note": "bounded weight problem; all time--frequency scalarizations are retained"
+      },
+      "T1": {
+        "global_constitutive_candidates_per_seed": 64,
+        "local_constitutive_candidates_per_seed": 16
+      },
+      "T2": {
+        "global_constitutive_candidates_per_seed": 96,
+        "local_constitutive_candidates_per_seed": 24
+      }
+    },
+    "budget_comparability_rule": "same five seeds and scalarization grid; nonlinear candidates scale with independent parameter dimension; convergence is accepted only after Pareto and best-loss saturation are demonstrated",
+    "budget_saturation_check": "repeat with 1.5 times the candidate budget; representative training losses must change by less than 2 percent or the budget is increased again"
+  },
+  "integration": {
+    "newton_abs_tol": 1e-10,
+    "newton_rel_tol": 1e-8,
+    "newton_max_iter": 20,
+    "jacobian_step": 1e-7,
+    "max_subdivisions": 10,
+    "max_scalar_increment": 0.025
+  },
+  "dma": {
+    "calibration_amplitude": 0.001,
+    "calibration_amplitude_fraction": 0.001,
+    "calibration_amplitude_percent": 0.1,
+    "consistency_amplitude": 0.0001,
+    "consistency_amplitude_fraction": 0.0001,
+    "frequency_unit": "Hz",
+    "angular_frequency_conversion": "omega=2*pi*f",
+    "frequency_channel_weights": {"storage": 0.5, "loss": 0.5},
+    "normalization_floor_MPa": {"storage": 0.05, "loss": 0.02},
+    "points_per_cycle": [64, 128, 256],
+    "strict_periodic_points_per_cycle": 128,
+    "minimum_cycles": 5,
+    "maximum_cycles": 24,
+    "steady_tolerance": 0.0005,
+    "frequencies_for_convergence_hz": [0.1, 1.0, 10.0, 100.0],
+    "amplitude_dma_frequency_hz": 1.0,
+    "amplitude_dma_role": "external diagnostic only"
+  },
+  "physical_numerical_gates": {
+    "finite_values_required": true,
+    "minimum_dissipation_MPa_per_s": -1e-10,
+    "maximum_detFv_error": 1e-7,
+    "objectivity_relative_error": 1e-8,
+    "time_step_levels": [1.0, 0.5, 0.25],
+    "DMA_steady_state_required": true,
+    "amplitude_accuracy_used_for_selection": false,
+    "amplitude_numerical_failures_are_reported": true
+  }
+}

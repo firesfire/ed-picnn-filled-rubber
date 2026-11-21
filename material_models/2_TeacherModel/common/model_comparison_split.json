@@ -1,0 +1,26 @@
+{
+  "schema_version": "2026-08-14-paper-v1",
+  "rule": "complete-condition holdout; no random time-point split",
+  "relaxation": {
+    "training": [
+      "uniaxial:25%",
+      "uniaxial:75%",
+      "uniaxial:100%",
+      "shear:0.20",
+      "shear:0.40",
+      "shear:0.80"
+    ],
+    "held_out": [
+      "uniaxial:50%",
+      "shear:0.60"
+    ]
+  },
+  "frequency_dma": {
+    "training_rule": "frequency_hz < 5 or frequency_hz > 20",
+    "held_out_rule": "5 <= frequency_hz <= 20"
+  },
+  "amplitude_dma": {
+    "role": "external diagnostic only; excluded from calibration, early stopping and model selection"
+  }
+}
+

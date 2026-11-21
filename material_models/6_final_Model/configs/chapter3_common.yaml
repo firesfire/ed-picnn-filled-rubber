@@ -1,0 +1,54 @@
+schema_version: '2026-08-29-chapter3-stage0-v1'
+status: frozen_after_stage0
+chapter_argument: >-
+  Under one fixed long-time Zhang-Li equilibrium network, seven time scales and
+  multiplicative kinematics, progressively release the nonequilibrium
+  dissipation potential and free energy to test whether amplitude, relaxation
+  rate and dynamic moduli can be represented jointly without violating
+  thermodynamic constraints.
+
+experimental_data:
+  relaxation_stress_definition: nominal_stress_MPa
+  uniaxial_strain_definition: engineering_strain
+  shear_strain_definition: engineering_shear
+  frequency_dma_amplitude_fraction: 0.001
+  amplitude_dma_frequency_hz: 1.0
+  ignore_dma_temperature_difference: true
+
+teacher:
+  model: T2-Ogden-1
+  candidate_id: 'T2:20260829:spectrum:22'
+  role: physically_acceptable_low_fidelity_teacher
+  parameter_file: '@project/2_TeacherModel/results_chapter2_fair_comparison/parameters/T2_chapter2_joint_evaluation_parameters.json'
+  equilibrium_network_role: fixed_long_time_equilibrium
+  refit_equilibrium_network: false
+  time_scales_s: [0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0]
+  branch_count: 7
+
+synthetic_database:
+  formal_hdf5: '@project/2_TeacherModel/pretraining_data/full/teacher_pretraining_full.h5'
+  manifest_csv: '@project/2_TeacherModel/pretraining_data/metadata/dataset_manifest.csv'
+  metadata_root: '@project/2_TeacherModel/pretraining_data/metadata'
+  diagnostic_hdf5: '@project/2_TeacherModel/pretraining_data/diagnostic_only/teacher_diagnostic_only.h5'
+  diagnostic_manifest_csv: '@project/2_TeacherModel/pretraining_data/diagnostic_only/diagnostic_manifest.csv'
+  expected_diagnostic_trajectory_count: 35
+  expected_trajectory_count: 198
+  expected_time_point_count: 9308
+  expected_branch_point_count: 65156
+  expected_split_counts:
+    train: 140
+    validation: 29
+    test: 29
+  expected_confidence_counts:
+    high: 16
+    medium: 124
+    low: 58
+  require_flow_supervision: true
+  require_rollout_supervision: true
+  stress_supervision_confidences: [high, medium]
+  energy_supervision_allowed: false
+
+randomness:
+  dataset_seed: 20260825
+  training_seeds: [20260828, 20260829, 20260830, 20260831, 20260901]
+  minimum_reported_training_seeds: 3

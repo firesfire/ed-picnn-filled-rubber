@@ -1,0 +1,115 @@
+schema_version: '2026-08-31-chapter3-stage6-v1'
+status: edpicnn_block_coordinate_training
+
+stage5b_config: '@project/6_final_Model/configs/stage5b_epicnn_energy_finetuning.yaml'
+stage5b_energy_checkpoint: '@project/6_final_Model/checkpoints/stage5b/hierarchical_fast_slow_energy_network_pareto.pt'
+stage4_checkpoint: '@project/6_final_Model/checkpoints/stage4/gdpicnn_stage4_selected.pt'
+teacher_anchor_cache: '@project/6_final_Model/audit/stage2/stage2_teacher_cache.npz'
+real_training_cache: '@project/6_final_Model/audit/stage3/stage3_real_training_data.json'
+amplitude_diagnostic_file: '@project/6_final_Model/audit/stage3/stage3_amplitude_external_diagnostic.json'
+
+frozen:
+  zhang_li_equilibrium_energy: true
+  tau_s: [0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0]
+  frequency_amplitude_fraction: 0.001
+  amplitude_dma_role: structure_development_diagnostic_not_used_for_gradient
+  base_stage4_dpicnn_weights: true
+  total_reference_nonequilibrium_modulus: true
+
+data:
+  relaxation_training: [uniaxial:25%, uniaxial:75%, uniaxial:100%, shear:0.20, shear:0.40, shear:0.80]
+  relaxation_validation: [uniaxial:50%, shear:0.60]
+  frequency_training_rule: 'f_Hz < 5 or f_Hz > 20'
+  frequency_validation_rule: '5 <= f_Hz <= 20'
+  points_per_time_decade: 6
+  maximum_loading_points: 18
+
+dissipation_gate:
+  transition_tau_s: 1.0
+  state_scales: [1.0, 1.0, 1.0, 0.5]
+  initial_gate: 5.0e-2
+  initial_nonlinear: 10.0
+  teacher_anchor_batch: 2048
+
+loss_weights:
+  energy:
+    q_log: 0.70
+    q_ordering: 0.20
+    Rneq: 0.04
+    Rneq_decade: 0.04
+    R: 0.02
+    loading: 0.05
+    storage: 0.25
+    loss: 0.02
+  dissipation:
+    q_log: 0.04
+    q_ordering: 0.02
+    Rneq: 0.55
+    Rneq_decade: 0.55
+    R: 0.08
+    loading: 0.04
+    storage: 0.04
+    loss: 0.30
+  joint:
+    q_log: 0.30
+    q_ordering: 0.10
+    Rneq: 0.32
+    Rneq_decade: 0.32
+    R: 0.06
+    loading: 0.04
+    storage: 0.16
+    loss: 0.16
+
+regularization:
+  energy_anchor: 0.002
+  dissipation_parameter_anchor: 0.0
+  high_medium_teacher_anchor: 0.0
+  branch_share_log_anchor: 0.08
+  branch_share_max_log_change: 0.25
+
+optimization:
+  seeds: [20260831, 20260832, 20260833]
+  alternations: 2
+  energy_epochs: 10
+  dissipation_epochs: 60
+  share_epochs: 10
+  joint_epochs: 12
+  energy_learning_rate: 0.0015
+  dissipation_learning_rate: 0.100
+  base_dpicnn_learning_rate: 0.0001
+  share_learning_rate: 0.003
+  joint_energy_learning_rate: 0.0003
+  joint_dissipation_learning_rate: 0.001
+  joint_base_dpicnn_learning_rate: 0.00005
+  minimum_learning_rate_fraction: 0.10
+  gradient_clip: 5.0
+  weight_decay: 1.0e-8
+  evaluation_interval: 3
+  training_cycles: 3
+  training_points_per_cycle: 24
+  energy_perturbation_std: 0.005
+
+cross_guards:
+  q_log_absolute_increase: 0.035
+  Rneq_absolute_increase: 0.020
+  storage_scaled_absolute_increase: 0.020
+  loss_log_absolute_increase: 0.050
+  maximum_validation_q_log_RMSE: 0.40
+  maximum_validation_Rneq_RMSE: 0.10
+  maximum_validation_storage_scaled_RMSE: 0.08
+  maximum_validation_loss_log_RMSE: 0.25
+  maximum_training_Rneq_RMSE: 0.205
+  maximum_teacher_high_medium_flow_NRMSE: 0.15
+  minimum_training_q_ordering_accuracy: 0.75
+
+full_validation:
+  selected_only: true
+  frequency_subset_Hz: [0.1, 1.0, 10.0, 100.0]
+  time_step_levels: [1.0, 0.5, 0.25]
+  newton_residual_maximum: 1.01e-8
+  detFv_error_maximum: 1.0e-8
+
+outputs:
+  results_dir: '@project/6_final_Model/results/stage6'
+  checkpoints_dir: '@project/6_final_Model/checkpoints/stage6'
+  figures_dir: '@project/6_final_Model/figures/stage6'

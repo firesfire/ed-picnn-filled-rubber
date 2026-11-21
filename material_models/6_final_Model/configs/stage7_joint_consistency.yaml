@@ -1,0 +1,125 @@
+schema_version: '2026-08-31-chapter3-stage7-v1'
+status: joint_relaxation_frequency_refinement_and_four_route_validation
+
+stage5b_config: '@project/6_final_Model/configs/stage5b_epicnn_energy_finetuning.yaml'
+stage5b_energy_checkpoint: '@project/6_final_Model/checkpoints/stage5b/hierarchical_fast_slow_energy_network_pareto.pt'
+stage4_checkpoint: '@project/6_final_Model/checkpoints/stage4/gdpicnn_stage4_selected.pt'
+stage6_checkpoint: '@project/6_final_Model/checkpoints/stage6/edpicnn_stage6_selected.pt'
+teacher_anchor_cache: '@project/6_final_Model/audit/stage2/stage2_teacher_cache.npz'
+real_training_cache: '@project/6_final_Model/audit/stage3/stage3_real_training_data.json'
+amplitude_diagnostic_file: '@project/6_final_Model/audit/stage3/stage3_amplitude_external_diagnostic.json'
+
+frozen:
+  zhang_li_equilibrium_energy: true
+  tau_s: [0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0]
+  frequency_amplitude_fraction: 0.001
+  amplitude_dma_role: external_diagnostic_not_used_for_gradient
+  total_reference_nonequilibrium_modulus: true
+  same_checkpoint_for_all_time_frequency_routes: true
+
+data:
+  relaxation_training: [uniaxial:25%, uniaxial:75%, uniaxial:100%, shear:0.20, shear:0.40, shear:0.80]
+  relaxation_validation: [uniaxial:50%, shear:0.60]
+  frequency_training_rule: 'f_Hz < 5 or f_Hz > 20'
+  frequency_validation_rule: '5 <= f_Hz <= 20'
+  points_per_time_decade: 6
+  maximum_loading_points: 18
+
+dissipation_gate:
+  transition_tau_s: 1.0
+  state_scales: [1.0, 1.0, 1.0, 0.5]
+  initial_gate: 5.0e-2
+  initial_nonlinear: 10.0
+  teacher_anchor_batch: 2048
+
+loss_weights:
+  energy:
+    q_log: 0.55
+    q_ordering: 0.14
+    q_slope: 0.22
+    Rneq: 0.08
+    Rneq_decade: 0.08
+    Rneq_stage: 0.08
+    R: 0.03
+    loading: 0.05
+    storage: 0.28
+    loss: 0.02
+    tan_delta: 0.03
+  dissipation:
+    q_log: 0.05
+    q_ordering: 0.02
+    q_slope: 0.03
+    Rneq: 0.46
+    Rneq_decade: 0.46
+    Rneq_stage: 0.42
+    R: 0.08
+    loading: 0.06
+    storage: 0.03
+    loss: 0.28
+    tan_delta: 0.14
+  joint:
+    q_log: 0.25
+    q_ordering: 0.08
+    q_slope: 0.12
+    Rneq: 0.30
+    Rneq_decade: 0.30
+    Rneq_stage: 0.28
+    R: 0.06
+    loading: 0.06
+    storage: 0.14
+    loss: 0.17
+    tan_delta: 0.09
+
+regularization:
+  energy_stage6_anchor: 0.01
+  dissipation_stage6_anchor: 0.01
+  high_medium_teacher_anchor: 0.30
+  branch_share_log_anchor: 0.15
+
+optimization:
+  seeds: [20260841, 20260842, 20260843]
+  alternations: 2
+  energy_epochs: 6
+  dissipation_epochs: 12
+  share_epochs: 4
+  joint_epochs: 6
+  energy_learning_rate: 0.0005
+  dissipation_learning_rate: 0.012
+  share_learning_rate: 0.001
+  joint_energy_learning_rate: 0.00012
+  joint_dissipation_learning_rate: 0.0005
+  minimum_learning_rate_fraction: 0.15
+  gradient_clip: 3.0
+  weight_decay: 1.0e-8
+  evaluation_interval: 2
+  training_cycles: 3
+  training_points_per_cycle: 24
+  pareto_alpha_grid: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+
+cross_guards:
+  maximum_validation_q_log_RMSE: 0.245
+  maximum_validation_Rneq_RMSE: 0.095
+  maximum_training_Rneq_RMSE: 0.205
+  maximum_validation_storage_scaled_RMSE: 0.018
+  maximum_validation_loss_log_RMSE: 0.065
+  maximum_teacher_high_confidence_flow_NRMSE: 0.15
+  minimum_training_q_ordering_accuracy: 0.75
+  maximum_reference_spectrum_relative_change: 0.02
+
+four_route_validation:
+  frequencies_Hz: [0.1, 1.0, 10.0, 100.0]
+  relaxation_amplitude_fraction: 1.0e-5
+  loading_time_s: 1.0e-6
+  direct_points_per_decade: 40
+  relaxation_times_s: [0.0, 1.0e-5, 3.0e-5, 1.0e-4, 3.0e-4, 1.0e-3, 3.0e-3, 1.0e-2, 3.0e-2, 1.0e-1, 3.0e-1, 1.0, 3.0, 10.0, 30.0, 100.0, 300.0, 1000.0, 3000.0, 10000.0]
+  transform_tail_time_s: 100000.0
+  periodic_points_per_cycle: 96
+  periodic_maximum_cycles: 18
+  periodic_steady_tolerance: 2.0e-4
+  maximum_storage_route_relative_error: 0.02
+  maximum_loss_route_relative_error: 0.05
+
+outputs:
+  results_dir: '@project/6_final_Model/results/stage7'
+  checkpoints_dir: '@project/6_final_Model/checkpoints/stage7'
+  figures_dir: '@project/6_final_Model/figures/stage7'

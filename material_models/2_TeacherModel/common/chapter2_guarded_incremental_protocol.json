@@ -1,0 +1,47 @@
+{
+  "schema_version": "2026-08-28-chapter2-guarded-incremental-v1.2",
+  "status": "active amendment to frozen fair protocol v1.1",
+  "scope": ["T1", "T2"],
+  "T0_policy": "reuse the already qualified T0 checkpoint without recalibration",
+  "baseline_policy": {
+    "T1": "../5_T1_OgdenPRF/results/parameters/T1_Ogden_1_stage5_guarded_joint_parameters.json",
+    "T2": "../6_T2_GroupedOgdenPRF/results/parameters/T2_Ogden_1_stage5_guarded_joint_parameters.json",
+    "baseline_is_forced_into_strict_time_evaluation": true,
+    "baseline_is_forced_into_full_periodic_DMA_evaluation": true
+  },
+  "unchanged_common_definitions": {
+    "configuration": "model_comparison_config.json",
+    "split": "model_comparison_split.json",
+    "equilibrium_network": "fixed Zhang--Li",
+    "tau_s": [0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0],
+    "frequency_DMA_amplitude_fraction": 0.001,
+    "amplitude_DMA_role": "external diagnostic only",
+    "held_out_data_used_for_selection": false
+  },
+  "training_guardrails": {
+    "minimum_q_ordering_accuracy": 1.0,
+    "maximum_q_log_RMSE": 0.75,
+    "maximum_detFv_error": 1e-7,
+    "minimum_dissipation_MPa_per_s": -1e-10,
+    "periodic_steady_state_required": true,
+    "all_outputs_finite": true
+  },
+  "nondegradation_selection": {
+    "primary_time_metric": "training_L_time under fair protocol v1.1",
+    "primary_frequency_metric": "training_L_frequency from 128-point full-cycle periodic integration",
+    "replacement_requires_both_metrics_to_improve": true,
+    "minimum_relative_improvement_each_axis": 0.001,
+    "fallback": "retain the old guarded baseline exactly",
+    "tie_breakers": ["lower Rneq_condition_RMSE", "lower q_log_RMSE", "lower runtime"]
+  },
+  "incremental_search": {
+    "seeds": [20260828, 20260829, 20260830, 20260831, 20260901],
+    "T1_local_candidates_per_seed": 48,
+    "T2_local_candidates_per_seed": 64,
+    "blocks": ["Ogden energy", "flow parameters", "softmax branch shares", "small joint perturbation"],
+    "archived_candidates_and_anchor_interpolations_are_included": true,
+    "strict_time_shortlist_per_model": 20,
+    "strict_periodic_shortlist_per_model": 7
+  },
+  "scientific_interpretation": "Fairness is enforced by common evaluation and immutable baselines; it does not require discarding a previously superior fit or refitting T0."
+}

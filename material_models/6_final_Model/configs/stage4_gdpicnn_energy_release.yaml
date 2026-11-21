@@ -1,0 +1,77 @@
+schema_version: '2026-08-30-chapter3-stage4-v1'
+status: low_parameter_nonequilibrium_energy_release
+stage3_checkpoint: '@project/6_final_Model/checkpoints/stage3/dpicnn_stage3_selected.pt'
+teacher_parameter_file: '@project/2_TeacherModel/results_chapter2_fair_comparison/parameters/T2_chapter2_joint_evaluation_parameters.json'
+real_training_cache: '@project/6_final_Model/audit/stage3/stage3_real_training_data.json'
+synthetic_anchor_cache: '@project/6_final_Model/audit/stage2/stage2_teacher_cache.npz'
+amplitude_external_file: '@project/6_final_Model/audit/stage3/stage3_amplitude_external_diagnostic.json'
+
+frozen:
+  zhang_li_equilibrium_energy: true
+  tau_s: true
+  trainable_sequence: [Gneq_MPa, branch_shares, ogden_exponent, grouped_fast_slow_exponents]
+  dissipation_architecture: PICNN-B
+
+data:
+  relaxation_training: [uniaxial:25%, uniaxial:75%, uniaxial:100%, shear:0.20, shear:0.40, shear:0.80]
+  relaxation_validation: [uniaxial:50%, shear:0.60]
+  frequency_training_rule: 'f_Hz < 5 or f_Hz > 20'
+  frequency_validation_rule: '5 <= f_Hz <= 20'
+  frequency_amplitude_fraction: 0.001
+  amplitude_dma_role: external_diagnostic_only_after_selection
+  points_per_time_decade: 5
+  maximum_loading_points: 14
+
+parameter_bounds:
+  Gneq_MPa: [0.02, 1.20]
+  ogden_exponent: [0.25, 20.0]
+  minimum_reported_share: 1.0e-8
+  grouped_transition_tau_s: 1.0
+
+regularization:
+  total_modulus_log: 0.015
+  shares_hellinger: 0.030
+  log_time_centroid: 0.025
+  log_time_variance: 0.010
+  exponent_log: 0.010
+  grouped_exponent_separation: 0.005
+  Rneq_guard_rmse: 0.070
+  Rneq_guard_weight: 0.50
+
+optimization:
+  seeds: [20260830, 20260831, 20260832]
+  G_only_epochs: 25
+  shares_epochs: 30
+  exponent_epochs: 30
+  grouped_epochs: 30
+  dissipation_refinement_epochs: 10
+  joint_refinement_epochs: 10
+  energy_learning_rate: 0.020
+  shares_learning_rate: 0.012
+  exponent_learning_rate: 0.008
+  dissipation_learning_rate: 0.00015
+  joint_energy_learning_rate: 0.002
+  joint_dissipation_learning_rate: 0.00005
+  minimum_learning_rate_fraction: 0.10
+  gradient_clip: 3.0
+  weight_decay: 1.0e-7
+  anchor_weight: 2.0
+  synthetic_anchor_batch: 4096
+  training_cycles: 2
+  training_points_per_cycle: 20
+  evaluation_interval: 5
+
+selection:
+  maximum_scaled_teacher_flow_nrmse: 0.10
+  maximum_validation_Rneq_degradation_fraction: 0.10
+  require_q_ordering_training: true
+  require_platform_ordering_training: true
+  require_finite: true
+  require_nonnegative_dissipation: true
+  grouped_trigger_validation_q_log_rmse: 0.30
+  grouped_trigger_validation_storage_rmse_scaled: 0.45
+  primary: real_validation_objective
+  secondary: validation_q_and_storage
+
+prescreen:
+  Gneq_grid_MPa: [0.04, 0.06, 0.08, 0.12, 0.18, 0.30, 0.50, 0.75]

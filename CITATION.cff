@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use these experimental data or this software, please cite this repository and the accompanying study."
+type: software
+title: "Coupling nonequilibrium energy and viscous flow in a finite-strain model for filled rubber"
+authors:
+  - family-names: Zhang
+    given-names: Zaicheng
+  - family-names: Luo
+    given-names: Ming
+  - family-names: Gu
+    given-names: Shuo
+  - family-names: Liu
+    given-names: Xiaoang
+keywords:
+  - finite-strain viscoelasticity
+  - filled rubber
+  - constitutive modeling
+  - experimental mechanics
