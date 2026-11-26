@@ -124,7 +124,7 @@ def simulate_peak_q(model, record: dict, *, strict: bool = False) -> float:
         strain = curve.strain[:peak + 1]
         max_increment = 0.025
     else:
-        # The measured loading ramps are piecewise linear.  During the scalar
+        # The prescribed loading ramps are piecewise linear.  During the scalar
         # shape search the same endpoints/rate are integrated with controlled
         # strain substeps, avoiding repeated Newton solves at redundant points.
         time_s = np.asarray([curve.time_s[0], curve.time_s[peak]], float)
@@ -209,7 +209,7 @@ class ShapeEvaluator:
             unit_model = build_model(self.model_name, self.payload, 1.0, a_ogden)
             step_basis = np.asarray([frozen_q(unit_model, row) for row in self.rows])
             # Stage-1 strict replays provide the condition-wise fraction that
-            # survives the measured loading ramp.  It is held fixed during the
+            # survives the prescribed loading ramp.  It is held fixed during the
             # cheap global shape screen; the selected candidate is then replayed
             # exactly below, so this proxy can never pass an acceptance gate.
             real_basis = step_basis * self.loading_retention
@@ -406,7 +406,7 @@ def plot_shape_search(search: pd.DataFrame, figures: Path,
             twin = ax.twinx()
             strict_line, = twin.plot(strict["a_ogden"], strict["objective"], "o-", ms=3.2,
                                      lw=1.2, color="#B64342",
-                                     label="Measured-ramp profile")
+                                     label="Prescribed-ramp profile")
             admissible = strict[(strict["a_ogden"] >= 1.0) &
                                 strict["step_increasing_uniaxial"].astype(bool) &
                                 strict["step_increasing_shear"].astype(bool)]

@@ -8,7 +8,7 @@ from comparison_core import (CurveTarget, ZhangLi, dma_design,
 
 
 class EquilibriumAnchoredQLV:
-    """Seven-branch scalar QLV baseline with the measured loading ramp retained."""
+    """Seven-branch scalar QLV baseline with the prescribed loading ramp retained."""
 
     def __init__(self, zhang_li: ZhangLi, tau_s, weights):
         self.zhang_li = zhang_li

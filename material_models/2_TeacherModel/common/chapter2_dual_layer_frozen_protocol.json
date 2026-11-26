@@ -19,7 +19,7 @@
     "main_models": ["T0", "T1", "T2"],
     "equilibrium_network": "one fixed Zhang--Li long-term equilibrium network",
     "tau_s": [0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0],
-    "relaxation_loading": "measured finite loading ramps; no ideal-step replacement",
+    "relaxation_loading": "prescribed constant-rate loading ramps; no ideal-step replacement",
     "frequency_DMA_amplitude_fraction": 0.001,
     "stress_and_modulus_unit": "MPa",
     "frequency_unit": "Hz with omega=2*pi*f",

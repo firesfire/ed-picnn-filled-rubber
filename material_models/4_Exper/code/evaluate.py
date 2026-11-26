@@ -20,8 +20,20 @@ def load_observations(data):
         frame = pd.read_csv(data / 'material_creep' / filename).rename(columns={
             'nominal_stress_MPa': 'target_stress_MPa', 'compliance_per_MPa': 'experimental_compliance_per_MPa'})
         frame['mode'] = mode
-        frame['experimental_strain'] = frame.target_stress_MPa * frame.experimental_compliance_per_MPa
         creep.append(frame)
+    creep = pd.concat(creep, ignore_index=True)
+    raw_path = data / 'material_creep' / 'material_creep_raw_observations.csv'
+    if raw_path.is_file():
+        keys = ['mode', 'target_stress_MPa', 'hold_time_s']
+        readings = pd.read_csv(raw_path).rename(columns={'compliance_per_MPa': 'experimental_compliance_per_MPa'})
+        readings['mode'] = readings['mode'].replace({'simple_shear': 'shear'})
+        increments = creep[keys + ['normalized_compliance_increment']]
+        creep = readings.merge(increments, on=keys, how='outer', validate='many_to_one', indicator=True)
+        if not creep.pop('_merge').eq('both').all():
+            raise ValueError('Creep readings and time-averaged curves use different condition-time coordinates.')
+        # Total-compliance errors use every reading. Each normalized increment is scored once per time.
+        creep.loc[creep.duplicated(keys), 'normalized_compliance_increment'] = float('nan')
+    creep['experimental_strain'] = creep.target_stress_MPa * creep.experimental_compliance_per_MPa
     frames = []
     for field, filename in [('frequency', 'frequency_sweeps.csv'), ('amplitude', 'amplitude_sweeps_1Hz.csv')]:
         frame = pd.read_csv(data / 'preloaded_dma' / filename).rename(columns={'preload_shear_strain': 'shear_preload'})
@@ -32,7 +44,7 @@ def load_observations(data):
             frame['strain_amplitude_fraction'] = frame.strain_amplitude_percent / 100.0
         frame['sweep'] = field
         frames.append(frame)
-    return pd.concat(creep, ignore_index=True), pd.concat(frames, ignore_index=True)
+    return creep, pd.concat(frames, ignore_index=True)
 
 
 def main():

@@ -23,7 +23,7 @@
       "directory": "../2_QLV",
       "implementation": "../2_QLV/code_paper/t0_model.py",
       "initial_checkpoint": "../2_QLV/results_paper_7branch/parameters/T0_joint_evaluation_parameters.json",
-      "kinematics": "equilibrium-stress hereditary QLV convolution with measured loading ramp",
+      "kinematics": "equilibrium-stress hereditary QLV convolution with prescribed loading ramp",
       "nonequilibrium_energy": "not represented by branchwise tensor internal variables",
       "flow_parameter_sharing": "one nonnegative scalar Prony spectrum shared by all deformation modes and levels",
       "independent_parameter_count": 7,
